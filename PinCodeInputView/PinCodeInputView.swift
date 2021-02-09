@@ -111,7 +111,11 @@ public class PinCodeInputView<T: UIView & ItemType>: UIControl, UITextInputTrait
         stackView.center = CGPoint(x: bounds.width / 2, y: bounds.height / 2)
     }
 
-    public func set(text: String) {
+    public func set(text: String, shouldValidate: Bool = true) {
+	guard shouldValidate else {
+	    self.text = text
+	    return
+	}
         if Validator.isPinCode(text: text, digit: digit) {
             self.text = text
         }
