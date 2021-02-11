@@ -57,7 +57,7 @@ public class PinCodeInputView<T: UIView & ItemType>: UIControl, UITextInputTrait
     public var returnKeyType = UIReturnKeyType.done
     public var enablesReturnKeyAutomatically = true
     public var textContentType: UITextContentType! = {
-	if #available(iOS 14, *) {
+	if #available(iOS 12, *) {
 	    return UITextContentType.oneTimeCode
 	} else {
 	    return nil
