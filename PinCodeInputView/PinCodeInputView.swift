@@ -56,6 +56,7 @@ public class PinCodeInputView<T: UIView & ItemType>: UIControl, UITextInputTrait
     public var keyboardAppearance = UIKeyboardAppearance.default
     public var returnKeyType = UIReturnKeyType.done
     public var enablesReturnKeyAutomatically = true
+    public var textContentType = UITextContentType.oneTimeCode
 
     // MARK: - Initializers
     
@@ -116,9 +117,9 @@ public class PinCodeInputView<T: UIView & ItemType>: UIControl, UITextInputTrait
 	    self.text = text
 	    return
 	}
-        if Validator.isPinCode(text: text, digit: digit) {
-            self.text = text
-        }
+	if Validator.isPinCode(text: text, digit: digit) {
+	    self.text = text
+	}
     }
 
     public func set(changeTextHandler: @escaping (String) -> ()) {
