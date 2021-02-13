@@ -9,7 +9,7 @@
 import UIKit
 
 @IBDesignable
-public class PinCodeInputView<T: UIView & ItemType>: UIControl, UITextInputTraits {
+public class PinCodeInputView<T: UIView & ItemType>: UIControl, UITextInputTraits, UITextFieldDelegate {
     
     // MARK: - Properties
     
@@ -41,7 +41,7 @@ public class PinCodeInputView<T: UIView & ItemType>: UIControl, UITextInputTrait
     private var items: [ContainerItemView<T>] = []
     private let itemFactory: () -> UIView
     private var appearance: ItemAppearance?
-	private let autoResizes: Bool
+    private let autoResizes: Bool
 
     // MARK: - UITextInputTraits
     
@@ -68,7 +68,7 @@ public class PinCodeInputView<T: UIView & ItemType>: UIControl, UITextInputTrait
         digit: Int,
         itemSpacing: CGFloat,
         itemFactory: @escaping (() -> T),
-		autoresizes: Bool = false) {
+        autoresizes: Bool = false) {
         
         self.digit = digit
         self.itemSpacing = itemSpacing
@@ -102,6 +102,7 @@ public class PinCodeInputView<T: UIView & ItemType>: UIControl, UITextInputTrait
         _textField.isHidden = true
         _textField.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         _textField.addTarget(self, action: #selector(self.onTextChanged(_:)), for: .editingChanged)
+        _textField.delegate = self
         
         if #available(iOS 12.0, *) { _textField.textContentType = .oneTimeCode }
         
@@ -110,6 +111,7 @@ public class PinCodeInputView<T: UIView & ItemType>: UIControl, UITextInputTrait
     }
     
     @objc private func onTextChanged(_ sender: UITextField) {
+        print("Pikachu \(sender.text)")
         self.text = sender.text ?? ""
     }
     
@@ -138,10 +140,12 @@ public class PinCodeInputView<T: UIView & ItemType>: UIControl, UITextInputTrait
 
     public func set(text: String, shouldValidate: Bool = true) {
         guard shouldValidate else {
+        _textField.text = text
             self.text = text
             return
         }
         if Validator.isPinCode(text: text, digit: digit) {
+            _textField.text = text
             self.text = text
         }
     }
@@ -152,9 +156,9 @@ public class PinCodeInputView<T: UIView & ItemType>: UIControl, UITextInputTrait
     
     public func set(appearance: ItemAppearance) {
         self.appearance = appearance
-		if autoResizes {
-			self.appearance = ItemAppearance(itemSize: CGSize(width: (self.bounds.width - (self.itemSpacing * CGFloat(self.digit))) / CGFloat(self.digit), height: appearance.itemSize.height), font: appearance.font, textColor: appearance.textColor, backgroundColor: appearance.backgroundColor, cursorColor: appearance.cursorColor, cornerRadius: appearance.cornerRadius, borderColor: appearance.borderColor)
-		}
+        if autoResizes {
+            self.appearance = ItemAppearance(itemSize: CGSize(width: (self.bounds.width - (self.itemSpacing * CGFloat(self.digit))) / CGFloat(self.digit), height: appearance.itemSize.height), font: appearance.font, textColor: appearance.textColor, backgroundColor: appearance.backgroundColor, cursorColor: appearance.cursorColor, cornerRadius: appearance.cornerRadius, borderColor: appearance.borderColor)
+        }
         items.forEach { $0.itemView.set(appearance: appearance) }
     }
     
@@ -265,4 +269,12 @@ public class PinCodeInputView<T: UIView & ItemType>: UIControl, UITextInputTrait
         }
     }
     
+    
+    public func textField(_ textField: UITextField,
+                   shouldChangeCharactersIn range: NSRange,
+                   replacementString string: String) -> Bool {
+        
+        if string.isEmpty { return true }
+        return text.count < digit
+    }
 }
