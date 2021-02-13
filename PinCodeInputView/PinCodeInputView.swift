@@ -9,7 +9,7 @@
 import UIKit
 
 @IBDesignable
-public class PinCodeInputView<T: UIView & ItemType>: UIControl, UITextInputTraits, UIKeyInput {
+public class PinCodeInputView<T: UIView & ItemType>: UIControl, UITextInputTraits {
     
     // MARK: - Properties
     
@@ -30,10 +30,6 @@ public class PinCodeInputView<T: UIView & ItemType>: UIControl, UITextInputTrait
         return text.count == digit
     }
 
-    public var hasText: Bool {
-        return !(text.isEmpty)
-    }
-
     override public var intrinsicContentSize: CGSize {
         return stackView.bounds.size
     }
@@ -48,6 +44,8 @@ public class PinCodeInputView<T: UIView & ItemType>: UIControl, UITextInputTrait
 	private let autoResizes: Bool
 
     // MARK: - UITextInputTraits
+    
+    private lazy var _textField = UITextField(frame: bounds)
 
     public var autocapitalizationType = UITextAutocapitalizationType.none
     public var autocorrectionType = UITextAutocorrectionType.no
@@ -88,11 +86,31 @@ public class PinCodeInputView<T: UIView & ItemType>: UIControl, UITextInputTrait
         }
         self.stackView.frame = self.bounds
         addSubview(stackView)
+        setupTextField()
         
         items.forEach { stackView.addArrangedSubview($0) }
         stackView.spacing = itemSpacing
         stackView.axis = .horizontal
         stackView.distribution = .fillEqually
+    }
+    
+    private func setupTextField() {
+        
+        _textField.keyboardType = keyboardType
+        _textField.autocapitalizationType = autocapitalizationType
+        _textField.keyboardAppearance = keyboardAppearance
+        _textField.isHidden = true
+        _textField.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        _textField.addTarget(self, action: #selector(self.onTextChanged(_:)), for: .editingChanged)
+        
+        if #available(iOS 12.0, *) { _textField.textContentType = .oneTimeCode }
+        
+        addSubview(_textField)
+        _textField.alpha = 0
+    }
+    
+    @objc private func onTextChanged(_ sender: UITextField) {
+        self.text = sender.text ?? ""
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -119,13 +137,13 @@ public class PinCodeInputView<T: UIView & ItemType>: UIControl, UITextInputTrait
     }
 
     public func set(text: String, shouldValidate: Bool = true) {
-	guard shouldValidate else {
-	    self.text = text
-	    return
-	}
-	if Validator.isPinCode(text: text, digit: digit) {
-	    self.text = text
-	}
+        guard shouldValidate else {
+            self.text = text
+            return
+        }
+        if Validator.isPinCode(text: text, digit: digit) {
+            self.text = text
+        }
     }
 
     public func set(changeTextHandler: @escaping (String) -> ()) {
@@ -170,28 +188,28 @@ public class PinCodeInputView<T: UIView & ItemType>: UIControl, UITextInputTrait
         items.forEach { $0.itemView.isHiddenCursor = true }
     }
     
-    // MARK: - UIKeyInput
-
-    public func insertText(_ textToInsert: String) {
-        if isEnabled && text.count + textToInsert.count <= digit && Validator.isOnlyNumeric(text: textToInsert) {
-            text.append(textToInsert)
-            sendActions(for: .editingChanged)
-        }
-    }
-    
-    public func deleteBackward() {
-        if isEnabled && !text.isEmpty {
-            text.removeLast()
-            sendActions(for: .editingChanged)
-        }
-    }
+//    // MARK: - UIKeyInput
+//
+//    public func insertText(_ textToInsert: String) {
+//        if isEnabled && text.count + textToInsert.count <= digit && Validator.isOnlyNumeric(text: textToInsert) {
+//            text.append(textToInsert)
+//            sendActions(for: .editingChanged)
+//        }
+//    }
+//
+//    public func deleteBackward() {
+//        if isEnabled && !text.isEmpty {
+//            text.removeLast()
+//            sendActions(for: .editingChanged)
+//        }
+//    }
 
     // MARK: - UIResponder
     
     @discardableResult
     override public func becomeFirstResponder() -> Bool {
         showCursor()
-        return super.becomeFirstResponder()
+        return _textField.becomeFirstResponder()
     }
     
     override public var canBecomeFirstResponder: Bool {
@@ -201,7 +219,7 @@ public class PinCodeInputView<T: UIView & ItemType>: UIControl, UITextInputTrait
     @discardableResult
     override public func resignFirstResponder() -> Bool {
         hiddenCursor()
-        return super.resignFirstResponder()
+        return _textField.resignFirstResponder()
     }
  
     // MARK: - private class
