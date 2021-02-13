@@ -111,7 +111,6 @@ public class PinCodeInputView<T: UIView & ItemType>: UIControl, UITextInputTrait
     }
     
     @objc private func onTextChanged(_ sender: UITextField) {
-        print("Pikachu \(sender.text)")
         self.text = sender.text ?? ""
     }
     
