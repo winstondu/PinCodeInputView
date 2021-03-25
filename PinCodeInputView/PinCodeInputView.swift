@@ -30,10 +30,6 @@ public class PinCodeInputView<T: UIView & ItemType>: UIControl, UITextInputTrait
         return text.count == digit
     }
 
-    override public var intrinsicContentSize: CGSize {
-        return stackView.bounds.size
-    }
-
     private let digit: Int
     private let itemSpacing: CGFloat
     private var changeTextHandler: ((String) -> Void)? = nil
@@ -92,6 +88,8 @@ public class PinCodeInputView<T: UIView & ItemType>: UIControl, UITextInputTrait
         stackView.spacing = itemSpacing
         stackView.axis = .horizontal
         stackView.distribution = .fillEqually
+
+        self.makeConstraints()
     }
     
     private func setupTextField() {
@@ -120,21 +118,13 @@ public class PinCodeInputView<T: UIView & ItemType>: UIControl, UITextInputTrait
 
     // MARK: - Functions
 
-    override public func layoutSubviews() {
-        super.layoutSubviews()
-        
-        guard let appearance = appearance else {
-            stackView.frame = bounds
-            return
-        }
-        
-        stackView.bounds = CGRect(
-            x: 0,
-            y: 0,
-            width: (appearance.itemSize.width * CGFloat(digit)) + (itemSpacing * CGFloat(digit - 1)),
-            height: appearance.itemSize.height
-        )
-        stackView.center = CGPoint(x: bounds.width / 2, y: bounds.height / 2)
+    private func makeConstraints() {
+        self.stackView.translatesAutoresizingMaskIntoConstraints = false
+        self.stackView.leadingAnchor.constraint(equalTo: self.leadingAnchor).isActive = true
+        self.stackView.trailingAnchor.constraint(equalTo: self.trailingAnchor).isActive = true
+        self.stackView.bottomAnchor.constraint(equalTo: self.bottomAnchor).isActive = true
+        self.stackView.topAnchor.constraint(equalTo: self.topAnchor).isActive = true
+        self.setNeedsLayout()
     }
 
     public func set(text: String, shouldValidate: Bool = true) {
